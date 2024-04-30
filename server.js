@@ -1,15 +1,30 @@
 const express = require("express");
 const app = express();
 const path = require("path");
-const logEvents = require("./middleware/logEvents");
+const cors = require("cors");
+const { logger } = require("./middleware/logEvents");
 const PORT = process.env.PORT || 3500;
 
 //custom middleware
-app.use((req, _, next) => {
-  logEvents(`${req.method}\t${req.header.origin}\t${req.url}`, "reqLog.txt");
-  console.log(`${req.method} ${req.path}`);
-  next();
-});
+app.use(logger);
+
+// Cross Origin Resource Sharing
+const whiteList = [
+  "https://www.google.com",
+  "http://localhost:3500",
+  "http://127.0.0.1:3500",
+];
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (whiteList.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error("Request from bad origin"));
+    }
+  },
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 
 app.use(express.urlencoded({ extended: false }));
 
