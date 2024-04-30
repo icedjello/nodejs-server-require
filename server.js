@@ -1,12 +1,21 @@
 const express = require("express");
 const app = express();
 const path = require("path");
+const logEvents = require("./middleware/logEvents");
 const PORT = process.env.PORT || 3500;
+
+//custom middleware
+app.use((req, _, next) => {
+  logEvents(`${req.method}\t${req.header.origin}\t${req.url}`, "reqLog.txt");
+  console.log(`${req.method} ${req.path}`);
+  next();
+});
 
 app.use(express.urlencoded({ extended: false }));
 
 app.use(express.json());
 
+// serve static files
 app.use(express.static(path.join(__dirname, "./public")));
 
 app.get("^/$|/index(.html)?", (_, res) => {
